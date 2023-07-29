@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.pydemo.dao.TitanicDao">
+
+
+	<sql id="BASE_COLUMN_LIST">
+		T.PASSENGERID,
+        T.SURVIVED,
+        T.PCLASS,
+        T.NAME,
+        T.SEX,
+        T.AGE,
+        T.SIBSP,
+        T.PARCH,
+        T.TICKET,
+        T.FARE,
+        T.CABIN,
+        T.EMBARKED
+	</sql>
+
+	<select id="findAll" resultType="com.example.pydemo.model.Titanic">
+		SELECT
+		<include refid="BASE_COLUMN_LIST"/>
+		FROM TITANIC T
+		ORDER BY T.PASSENGERID ASC
+	</select>
+
+
+
+</mapper>

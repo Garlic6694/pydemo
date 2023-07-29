@@ -1,0 +1,19 @@
+spring:
+  #  datasource:
+  #    url: jdbc:mysql://localhost:3306/py_test?useUnicode=true&characterEncoding=UTF-8&autoReconnect=true&serverTimezone=Asia/Shanghai
+  #    username: root
+  #    password: 123456
+  #    driver-class-name: com.mysql.cj.jdbc.Driver
+  datasource:
+    url: jdbc:oracle:thin:@47.95.203.87:1521:helowin
+    username: haha
+    password: qwer#1234#iscas
+    driver-class-name: oracle.jdbc.OracleDriver
+
+
+### mybatis
+mybatis:
+  mapper-locations: classpath:/mybatis-mapper/*Mapper.xml
+
+
+
