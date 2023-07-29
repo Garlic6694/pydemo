@@ -32,4 +32,8 @@ build/
 ### VS Code ###
 .vscode/
 
+**.csv
 
+
+
+src/main/resources/py-file/error.txt
