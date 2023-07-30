@@ -33,7 +33,6 @@ build/
 .vscode/
 
 **.csv
+**.txt
 
-
-
-src/main/resources/py-file/error.txt
+**.whl

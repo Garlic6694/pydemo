@@ -24,15 +24,14 @@ public class CsvUtil<T> {
      * 生成为CVS文件
      *
      * @param exportData 源数据List
-     * @param fileds
+     * @param fields
      * @param map        csv文件的列表头map
      * @param outPutPath 文件路径
      * @param fileName   文件名称
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public String createCSVFile(List<T> exportData, String[] fileds,
-                                HashMap map, String outPutPath, String fileName, String splitStr) {
+    public String createCSVFile(List<T> exportData, String[] fields, HashMap map, String outPutPath, String fileName, String splitStr) {
         File csvFile = null;
         BufferedWriter csvFileOutputStream = null;
         try {
@@ -60,13 +59,12 @@ public class CsvUtil<T> {
             csvFileOutputStream.write("\r\n");
             // 写入文件内容,
             // ============ //第一种格式：Arraylist<实体类>填充实体类的基本信息==================
-            for (int j = 0; exportData != null && !exportData.isEmpty()
-                    && j < exportData.size(); j++) {
+            for (int j = 0; exportData != null && !exportData.isEmpty() && j < exportData.size(); j++) {
                 T t = (T) exportData.get(j);
                 Class clazz = t.getClass();
-                String[] contents = new String[fileds.length];
-                for (int i = 0; i < fileds.length; i++) {
-                    String filedName = toUpperCaseFirstOne(fileds[i]);
+                String[] contents = new String[fields.length];
+                for (int i = 0; i < fields.length; i++) {
+                    String filedName = toUpperCaseFirstOne(fields[i]);
                     Method method = clazz.getMethod(filedName);
                     method.setAccessible(true);
                     Object obj = method.invoke(t);
@@ -77,12 +75,16 @@ public class CsvUtil<T> {
 
                 }
 
-                for (String content : contents) {
-                    // 将生成的单元格添加到工作表中
-                    csvFileOutputStream.write(content);
-                    csvFileOutputStream.write("@@@");
+                for (int i = 0; i < contents.length; i++) {
+                    if (i != contents.length - 1) {
+                        csvFileOutputStream.write(contents[i]);
+                        csvFileOutputStream.write("@@@");
+                    } else {
+                        csvFileOutputStream.write(contents[i]);
+                    }
 
                 }
+
                 csvFileOutputStream.write("\r\n");
             }
             csvFileOutputStream.flush();
@@ -162,7 +164,7 @@ public class CsvUtil<T> {
     public static boolean deleteFile(String filePath, String fileName) {
         File file = new File(filePath + "/" + fileName);
         if (file.exists()) {
-            System.out.println("delete file success" + fileName);
+            System.out.println("delete file success " + fileName);
             return file.delete();
         } else {
             System.out.println("file not exists");
@@ -178,11 +180,11 @@ public class CsvUtil<T> {
         // =======改成list的格式，支持（Arraylist传入实体类的形式），改造的方法============
         ArrayList<Titanic> titanicArrayList = new ArrayList<>();
         Titanic titanic = new Titanic();
-        titanic.setPassengerId(123);
+        titanic.setId(123);
         titanic.setName("tom1");
 
         Titanic titanic1 = new Titanic();
-        titanic1.setPassengerId(124);
+        titanic1.setId(124);
         titanic1.setName("tom2");
         titanicArrayList.add(titanic);
         titanicArrayList.add(titanic1);

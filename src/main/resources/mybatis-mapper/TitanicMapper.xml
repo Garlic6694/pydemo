@@ -5,7 +5,7 @@
 
 
 	<sql id="BASE_COLUMN_LIST">
-		T.PASSENGERID,
+		T.ID,
         T.SURVIVED,
         T.PCLASS,
         T.NAME,
@@ -23,7 +23,7 @@
 		SELECT
 		<include refid="BASE_COLUMN_LIST"/>
 		FROM TITANIC T
-		ORDER BY T.PASSENGERID ASC
+		ORDER BY T.ID ASC
 	</select>
 
 

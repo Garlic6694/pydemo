@@ -12,6 +12,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
@@ -69,46 +70,48 @@ class PydemoApplicationTests {
         String filePath = rootPath + "py-file";
         String fileName = "csv_file_";
 
-        HashMap<String, String> map = new HashMap<>();
-        map.put("1", "第一列");
-        map.put("2", "第二列");
-        map.put("3", "第三列");
-        map.put("4", "第四列");
-        String[] fileds = new String[]{"PassengerId", "Name"};// 设置列英文名,即实体类里面对应的列名
+
+        String sourceColumn = "Id,Pclass,Sex";
+        String targetColumn = "Age";
+
+        String regex = ",";
+        String[] fields = stringToArray(sourceColumn + regex + targetColumn, ",");
+
+        System.out.println(Arrays.toString(fields));
+
+        HashMap<String, String> map = arrayToHashMap(fields);
+
 
         CsvUtil<Titanic> csvUtil = new CsvUtil<>();
 
         String splitStr = "@@@";
-        String resultFilename = csvUtil.createCSVFile(titanicArrayList, fileds, map, filePath, fileName, splitStr);
-        //System.out.println(resultFilename);
+        String resultFilename = csvUtil.createCSVFile(titanicArrayList, fields, map, filePath, fileName, splitStr);
 
+        for (Titanic titanic : titanicArrayList) {
+            System.out.println(titanic.toString());
+        }
 
-//        for (Titanic titanic : titanicArrayList) {
-//            System.out.println(titanic.toString());
-//        }
-
-
-        System.out.println("Start");
-        // python解释器的路径，
+        System.out.println("Start Python");
+        // python解释器的路径
         String pyExecPath = "/Users/garlicv/anaconda3/envs/py3.7/bin/python";
         // python脚本的路径，
-        String pyPath = "src/main/resources/py-file/plus.py";
-        // 传入python脚本的参数
-        String[] args1 = new String[]{pyExecPath, pyPath, resultFilename, splitStr, "源列2", "目标列"};
+        String pyPath = "src/main/resources/py-file/deficiency.py";
         String targetPath = filePath + "/";
         String cleanFilename = "result.csv";
+        // python 执行命令行
         String execSh = pyExecPath +
                 " " +
                 pyPath +
-                " " +
-                "--file_path " +
+                "  --file_path  " +
                 targetPath + resultFilename +
-                " " +
-                "--result_file_path " +
+                "  --result_file_path  " +
                 targetPath + cleanFilename +
-                " " +
-                "--sep " +
-                splitStr;
+                "  --sep  " +
+                splitStr +
+                "  --source  " +
+                sourceColumn +
+                "  --target  " +
+                targetColumn;
 
         System.out.println(execSh);
 
@@ -127,12 +130,33 @@ class PydemoApplicationTests {
             throw new RuntimeException(e);
         }
 
-        System.out.println("End");
+        System.out.println("End Python");
 
         CsvUtil.deleteFile(filePath, resultFilename);
 
 
+    }
 
+    public static String[] stringToArray(String sourceColumn, String regex) {
+        // Split the sourceColumn string by commas
+        String[] result = sourceColumn.split(regex);
+
+        // Trim any leading or trailing whitespaces in each element
+        for (int i = 0; i < result.length; i++) {
+            result[i] = result[i].trim();
+        }
+
+        return result;
+    }
+
+    public static HashMap<String, String> arrayToHashMap(String[] array) {
+        HashMap<String, String> hashMap = new HashMap<>();
+
+        for (int i = 0; i < array.length; i++) {
+            hashMap.put(String.valueOf(i + 1), array[i]);
+        }
+
+        return hashMap;
     }
 
 }
