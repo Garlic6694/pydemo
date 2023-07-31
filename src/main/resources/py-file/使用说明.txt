@@ -1,0 +1,7 @@
+Anaconda3 (Python3.7)下载链接：https://mirrors.tuna.tsinghua.edu.cn/anaconda/archive/Anaconda3-2020.02-Linux-x86_64.sh
+
+install-python.sh 上面下载的文件和这个脚本放在一起，运行install-python.sh，python将安装在/opt/anaconda3/bin/python
+
+String columnJava = "Id,Survived,Pclass,Name,Sex,Age,SibSp,Parch,Ticket,Fare,Cabin,Embarked";
+columnJava这个参数需要按照数据库字段的顺序来写，用来写入csv的表头
+

@@ -15,23 +15,23 @@ from sklearn.svm import SVC, SVR
 from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 
-def one_hot_encode_column(df, column_name):
+def one_hot_encode_column(input_df, column_name):
     # 使用get_dummies()函数对指定的column_name列进行哑变量化
-    dummies_df = pd.get_dummies(df[column_name], prefix=column_name)
+    dummies_df = pd.get_dummies(input_df[column_name], prefix=column_name)
 
     # 将哑变量化后的DataFrame与原始DataFrame合并
-    df = pd.concat([dummies_df, df], axis=1)
+    input_df = pd.concat([dummies_df, input_df], axis=1)
 
     # 删除原始的column_name列
-    df.drop(column_name, axis=1, inplace=True)
+    input_df.drop(column_name, axis=1, inplace=True)
 
-    return df
+    return input_df
 
 
 def algorithm_switch(k):
-    # 分类算法（Classification Algorithms）：标号范围 1-8
+    # 分类算法（Classification Algorithms
     classification_algorithms = {
-        1: LogisticRegression(),
+        1: LogisticRegression(max_iter=5000),
         # 逻辑回归（Logistic Regression）
         2: KNeighborsClassifier(),
         # K最近邻算法（K-Nearest Neighbors，KNN）
@@ -49,76 +49,78 @@ def algorithm_switch(k):
         # 神经网络（Neural Networks）
     }
 
-    # 回归算法（Regression Algorithms）：标号范围 11-18
+    # 回归算法（Regression Algorithms）
     regression_algorithms = {
-        9: LinearRegression(),
+        10: LinearRegression(),
         # 线性回归（Linear Regression）
-        10: Ridge(),
+        11: Ridge(),
         # 岭回归（Ridge Regression）
-        11: Lasso(),
+        12: Lasso(),
         # Lasso回归（Lasso Regression）
-        12: SVR(kernel="sigmoid"),
+        13: SVR(kernel="sigmoid"),
         # 支持向量回归（Support Vector Regression，SVR） linear 线性 poly 非线性问题 rbf 非线性问题 sigmoid 非线性问题
-        13: DecisionTreeRegressor(),
+        14: DecisionTreeRegressor(),
         # 决策树回归（Decision Tree Regression）
-        14: RandomForestRegressor(),
+        15: RandomForestRegressor(),
         # 随机森林回归（Random Forest Regression）
-        15: GradientBoostingRegressor(),
+        16: GradientBoostingRegressor(),
         # 梯度提升树回归（Gradient Boosting Regression）
-        16: MLPRegressor(max_iter=5000),
+        17: MLPRegressor(max_iter=5000),
         # 神经网络回归（Neural Networks Regression）
+        18: KNeighborsRegressor(),
+        # K最近邻算法（K-Nearest Neighbors，KNN）
     }
 
     if 1 <= k <= 8:
         return classification_algorithms.get(k, None)
-    elif 9 <= k <= 16:
+    elif 10 <= k <= 18:
         return regression_algorithms.get(k, None)
     else:
         return None
 
 
-def set_missing_age(df, source_col, target_col):
+def set_missing_age(df, source_col, target_col, alg):
     # 把数值类型特征取出来，放入随机森林中进行训练
-    tmp_df = df.copy()
 
-    tmp_df.drop("Id", axis=1, inplace=True)
-    tmp_df = one_hot_encode_column(tmp_df, "Sex")
+    source_cols = str(source_col).split(",")
+
+    tmp_df = df.copy()
 
     # 乘客分成已知年龄和未知年龄两个部分
     unknown = tmp_df[
         (tmp_df[target_col] == 0)
         | (tmp_df[target_col].isnull())
         | (tmp_df[target_col].isna())
-    ]
+        ]
     known = tmp_df[
         ~(
-            (tmp_df[target_col] == 0)
-            | (tmp_df[target_col].isnull())
-            | (tmp_df[target_col].isna())
+                (tmp_df[target_col] == 0)
+                | (tmp_df[target_col].isnull())
+                | (tmp_df[target_col].isna())
         )
     ]
 
     # 目标数据y
     y = known[target_col]
-    # print("y", y)
 
     # 特征属性数据x
-    x = known[known.columns.difference([target_col])]
-    # print("x", x)
+    x = known[source_cols]
+
+    # x = one_hot_encode_column(x, "Sex") # 将某一列数据进行“哑变量”处理
 
     # 利用算法进行拟合
-    algorithm = algorithm_switch(16)
+    algorithm = algorithm_switch(alg)
     algorithm.fit(x, y)
 
     # 利用训练的模型进行预测
-    predicted = algorithm.predict(unknown[unknown.columns.difference([target_col])])
+    predicted = algorithm.predict(unknown[source_cols])
 
     # 填补缺失的原始数据
     df.loc[
         (
-            (tmp_df[target_col] == 0)
-            | (tmp_df[target_col].isnull())
-            | (tmp_df[target_col].isna())
+                (tmp_df[target_col] == 0)
+                | (tmp_df[target_col].isnull())
+                | (tmp_df[target_col].isna())
         ),
         target_col,
     ] = predicted
@@ -138,7 +140,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "--source",
         type=str,
-        default="Id,Pclass,Sex,SibSp,Parch",
+        default="Pclass,SibSp,Parch",
         required=False,
         help="源列，用英文逗号分隔",
     )
@@ -147,18 +149,48 @@ if __name__ == "__main__":
         type=str,
         default="Age",
         required=False,
-        help="Description of argument 3",
+        help="目标列",
+    )
+
+    classification = "1: Logistic Regression," + \
+                     "2: K-Nearest Neighbors, KNN," + \
+                     "3: Support Vector Machines, SVM," + \
+                     "4: Decision Trees," + \
+                     "5: Random Forest," + \
+                     "6: GradientBoostingClassifier," + \
+                     "7: GaussianNB," + \
+                     "8: MLPClassifier,"
+
+    regression = "10: Linear Regression," + \
+                 "11: Ridge Regression," + \
+                 "12: Lasso Regression," + \
+                 "13: Support Vector Regression, SVR," + \
+                 "14: Decision Tree Regression," + \
+                 "15: RandomForestRegressor," + \
+                 "16: GradientBoostingRegressor," + \
+                 "17: MLPRegressor," + \
+                 "18: KNeighborsRegressor,"
+
+    alg_help = classification + regression
+
+    parser.add_argument(
+        "--alg",
+        type=int,
+        default=1,
+        required=False,
+        help="选择算法:" + alg_help,
     )
     args = parser.parse_args()
 
     file_path = args.file_path
     sep = args.sep
-    source_column = str(args.source).split(",")
+    source_column = args.source
     target_column = args.target
+    alg = args.alg
 
     try:
         df = pd.read_csv(file_path, sep=sep, encoding="utf-8", engine="python")
-        df = set_missing_age(df, source_column, target_column)
+        df = set_missing_age(df, source_column, target_column, alg)
 
         columns = list(df.columns)
         result_file_path = args.result_file_path
@@ -178,3 +210,5 @@ if __name__ == "__main__":
         output_str = e
 
     print(output_str)
+
+    # python.exe src/main/resources/py-file/deficiency.py  --file_path  src/main/resources/py-file/csv_file_2179468817098402510.csv  --result_file_path  src/main/resources/py-file/result.csv  --sep  @@@  --source  Id,Pclass,Sex  --target  Age

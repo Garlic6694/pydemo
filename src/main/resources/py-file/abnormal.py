@@ -1,3 +1,5 @@
+import argparse
+
 import pandas as pd
 from scipy import stats
 from sklearn.cluster import DBSCAN
@@ -98,17 +100,58 @@ def detect_outliers_zscore(df, column_name, threshold=3):
     return df[outlier_indices]
 
 
-if __name__ == "__main__":
-    file_path = "source.csv"
-    sep = "@@@"
-    df = pd.read_csv(file_path, sep=sep, encoding="utf-8", engine="python")
-    print(df.keys())
+# Function to switch between outlier detection methods
+def detect_outliers(df, column_name, method, **kwargs):
+    if method == 1:
+        return detect_outliers_zscore(df, column_name, **kwargs)
+    elif method == 2:
+        return detect_outliers_isolation_forest(df, column_name, **kwargs)
+    elif method == 3:
+        return detect_outliers_lof(df, column_name, **kwargs)
+    elif method == 4:
+        return detect_outliers_oneclass_svm(df, column_name, **kwargs)
+    elif method == 5:
+        return detect_outliers_dbscan(df, column_name, **kwargs)
+    else:
+        raise ValueError("Invalid method. Please choose a valid outlier detection method.")
 
-    # 判断Age列中的异常值
-    outliers = detect_outliers_zscore(df, "Age")
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description="命令行参数解释器")
+    parser.add_argument("--file_path", type=str, default="source.csv", help="源文件")
+    parser.add_argument(
+        "--result_file_path", type=str, default="result.csv", help="结果文件"
+    )
+    parser.add_argument("--sep", type=str, default="@@@", help="分隔符")
+    parser.add_argument(
+        "--target",
+        type=str,
+        default="Age",
+        required=False,
+        help="Description of argument 3",
+    )
+
+    parser.add_argument(
+        "--alg",
+        type=str,
+        default=2,
+        required=False,
+        help="1:zscore, 2:isolation_forest, 3:lof, 4:oneclass_svm, 5:dbscan",
+    )
+    args = parser.parse_args()
+
+    file_path = args.file_path
+    sep = args.sep
+    target_col = args.target
+
+    df = pd.read_csv(file_path, sep=sep, encoding="utf-8", engine="python")
+    # 判断target列中的异常值
+    method = args.alg
+    kwargs = {}  # Additional arguments for the selected method
+    outliers = detect_outliers(df, target_col, method=method, **kwargs)
 
     # 输出异常值
-    print("异常值：")
+    print("异常值：", outliers["Id"].values)
     print(outliers)
 
     """

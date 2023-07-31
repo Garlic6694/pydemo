@@ -25,13 +25,13 @@ public class CsvUtil<T> {
      *
      * @param exportData 源数据List
      * @param fields
-     * @param map        csv文件的列表头map
+     * @param head       csv文件的列表头
      * @param outPutPath 文件路径
      * @param fileName   文件名称
      * @return
      */
     @SuppressWarnings("rawtypes")
-    public String createCSVFile(List<T> exportData, String[] fields, HashMap map, String outPutPath, String fileName, String splitStr) {
+    public String createCSVFile(List<T> exportData, String[] fields, String head, String outPutPath, String fileName, String splitStr) {
         File csvFile = null;
         BufferedWriter csvFileOutputStream = null;
         try {
@@ -47,15 +47,17 @@ public class CsvUtil<T> {
             csvFileOutputStream = new BufferedWriter(new OutputStreamWriter(
                     Files.newOutputStream(csvFile.toPath()), StandardCharsets.UTF_8), 1024);
             //System.out.println("csvFileOutputStream：" + csvFileOutputStream);
-            // 写入文件头部
-            for (Iterator propertyIterator = map.entrySet().iterator(); propertyIterator.hasNext(); ) {
-                java.util.Map.Entry propertyEntry = (java.util.Map.Entry) propertyIterator.next();
-                csvFileOutputStream.write(propertyEntry.getValue() != null ? new String(((String) propertyEntry.getValue()).getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8) : "");
-                if (propertyIterator.hasNext()) {
-                    csvFileOutputStream.write(splitStr);
-                }
-                //System.out.println(new String(((String) propertyEntry.getValue()).getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
-            }
+//            // 写入文件头部
+//            for (Iterator propertyIterator = map.entrySet().iterator(); propertyIterator.hasNext(); ) {
+//                java.util.Map.Entry propertyEntry = (java.util.Map.Entry) propertyIterator.next();
+//                csvFileOutputStream.write(propertyEntry.getValue() != null ? new String(((String) propertyEntry.getValue()).getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8) : "");
+//                if (propertyIterator.hasNext()) {
+//                    csvFileOutputStream.write(splitStr);
+//                }
+//                //System.out.println(new String(((String) propertyEntry.getValue()).getBytes(StandardCharsets.UTF_8), StandardCharsets.UTF_8));
+//            }
+            csvFileOutputStream.write(head);
+
             csvFileOutputStream.write("\r\n");
             // 写入文件内容,
             // ============ //第一种格式：Arraylist<实体类>填充实体类的基本信息==================
@@ -206,7 +208,8 @@ public class CsvUtil<T> {
         CsvUtil csvUtil = new CsvUtil<Titanic>();
 
         String splitStr = "@@@";
-        String resultFilename = csvUtil.createCSVFile(titanicArrayList, fileds, map, filePath, fileName, splitStr);
+        String head = "";
+        String resultFilename = csvUtil.createCSVFile(titanicArrayList, fileds, head, filePath, fileName, splitStr);
         System.out.println(resultFilename);
 
 

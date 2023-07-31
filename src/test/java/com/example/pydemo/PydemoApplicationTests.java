@@ -5,12 +5,12 @@ import com.example.pydemo.service.TitanicService;
 import com.example.pydemo.util.CsvUtil;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.SpringBootContextLoader;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -71,33 +71,37 @@ class PydemoApplicationTests {
         String fileName = "csv_file_";
 
 
-        String sourceColumn = "Id,Pclass,Sex";
-        String targetColumn = "Age";
+        String columnJava = "Id,Survived,Pclass,Name,Sex,Age,SibSp,Parch,Ticket,Fare,Cabin,Embarked";
 
         String regex = ",";
-        String[] fields = stringToArray(sourceColumn + regex + targetColumn, ",");
-
-        System.out.println(Arrays.toString(fields));
-
-        HashMap<String, String> map = arrayToHashMap(fields);
+        String[] fields = columnJava.split(regex);
+        // Trim any leading or trailing whitespaces in each element
+        for (int i = 0; i < fields.length; i++) {
+            fields[i] = fields[i].trim();
+        }
+        String head = columnJava.replaceAll(",", "@@@");
+        System.out.println(head);
 
 
         CsvUtil<Titanic> csvUtil = new CsvUtil<>();
-
         String splitStr = "@@@";
-        String resultFilename = csvUtil.createCSVFile(titanicArrayList, fields, map, filePath, fileName, splitStr);
+        String resultFilename = csvUtil.createCSVFile(titanicArrayList, fields, head, filePath, fileName, splitStr);
 
-        for (Titanic titanic : titanicArrayList) {
-            System.out.println(titanic.toString());
-        }
+//        for (Titanic titanic : titanicArrayList) {
+//            System.out.println(titanic.toString());
+//        }
 
         System.out.println("Start Python");
+
+        String sourceColumn = "Pclass,SibSp,Parch";
+        String targetColumn = "Age";
         // python解释器的路径
-        String pyExecPath = "/Users/garlicv/anaconda3/envs/py3.7/bin/python";
+        String pyExecPath = "/opt/anaconda3/bin/python";
         // python脚本的路径，
         String pyPath = "src/main/resources/py-file/deficiency.py";
         String targetPath = filePath + "/";
         String cleanFilename = "result.csv";
+        int alg = 10; // 算法选择
         // python 执行命令行
         String execSh = pyExecPath +
                 " " +
@@ -111,7 +115,10 @@ class PydemoApplicationTests {
                 "  --source  " +
                 sourceColumn +
                 "  --target  " +
-                targetColumn;
+                targetColumn +
+                "  --alg  " +
+                alg;
+
 
         System.out.println(execSh);
 
@@ -132,31 +139,12 @@ class PydemoApplicationTests {
 
         System.out.println("End Python");
 
-        CsvUtil.deleteFile(filePath, resultFilename);
+//        CsvUtil.deleteFile(filePath, resultFilename);
 
+        //TODO
+        // 操作结果文件
+        // 删除
 
-    }
-
-    public static String[] stringToArray(String sourceColumn, String regex) {
-        // Split the sourceColumn string by commas
-        String[] result = sourceColumn.split(regex);
-
-        // Trim any leading or trailing whitespaces in each element
-        for (int i = 0; i < result.length; i++) {
-            result[i] = result[i].trim();
-        }
-
-        return result;
-    }
-
-    public static HashMap<String, String> arrayToHashMap(String[] array) {
-        HashMap<String, String> hashMap = new HashMap<>();
-
-        for (int i = 0; i < array.length; i++) {
-            hashMap.put(String.valueOf(i + 1), array[i]);
-        }
-
-        return hashMap;
     }
 
 }
